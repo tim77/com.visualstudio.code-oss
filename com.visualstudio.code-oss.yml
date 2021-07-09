@@ -14,6 +14,8 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.freedesktop.Flatpak
   - --filesystem=host
+  - --env=ZYPAK_BIN=/app/bin
+  - --env=ZYPAK_LIB=/app/lib
 command: code-oss
 rename-desktop-file: code-oss.desktop
 rename-appdata-file: code-oss.appdata.xml
@@ -137,13 +139,26 @@ modules:
       - type: file
         path: install-data.py
 
+  - name: zypak
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://github.com/refi64/zypak.git
+        tag: v2021.06
+        commit: 89dd114427a114028f249ed9b2824d083f459eb5
+
   - name: wrapper
     buildsystem: meson
     config-opts:
-      - -Deditor_binary=/app/main/bin/code-oss
-      - -Deditor_args=['--extensions-dir', '$XDG_DATA_HOME/vscode/extensions']
+      - --bindir=/app/libexec
+      - -Deditor_binary=/app/bin/zypak-helper
+      - -Deditor_args=['host', '/app/main/code-oss']
       - -Dprogram_name=code-oss
       - -Deditor_title=Visual Studio Code Open Source
+    post-install:
+      - install -Dm755 ../code-oss.sh /app/bin/code-oss
     sources:
       - type: dir
         path: wrapper
+      - type: file
+        path: code-oss.sh
